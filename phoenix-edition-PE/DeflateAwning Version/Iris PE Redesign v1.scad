@@ -4,8 +4,8 @@ include <BOSL2/std.scad>;
 // Distance: 0.7mm
 // Thickness: 1.0mm
 
-//filename = "Iris PE Middle Layer - Normal No Lip for 1.5mm Plate.stl";
-filename = "Iris PE Middle Layer - Normal No Lip for 1.5mm Plate - Centered.stl";
+//filename = "../Iris PE Middle Layer - Normal No Lip for 1.5mm Plate.stl";
+filename = "../Iris PE Middle Layer - Normal No Lip for 1.5mm Plate - Centered.stl";
 outline_filename = "openscad_gen - Iris PE Normal No Lip Outline.dxf";
 
 import_size_x = 157.44;
