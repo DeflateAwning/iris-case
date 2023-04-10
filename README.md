@@ -1,26 +1,28 @@
 Iris Keyboard Case
 ==================
 
-Here's case design files for the [Iris](https://keeb.io/products/iris-keyboard-split-ergonomic-keyboard). It's a sandwich-style case with cutouts to accommodate the USB jack and the TRRS jack.
+This repo contains the [Iris keyboard case](https://keeb.io/products/iris-keyboard-split-ergonomic-keyboard) design files. The case is a sandwich-style case with cutouts to accommodate the USB jack and the inter-half jack.
 
 DeflateAwning Variation
 -----------------------
 
-The DeflateAwning variation removes the bottom layer, decreasing the thickness of the whole board by 1.6mm, and simplifying the part count.
+The DeflateAwning variation removes the bottom FR/acrylic layer, decreasing the thickness of the whole board by 1.6mm, and simplifying the part count.
 
 This version is for the Iris Rev 6, and has been tested on the Iris Rev. 6.1 PCB only. It may be compatible with other ones, but it might not be.
 
-Other changes:
-* Uses M2 thread-forming screws instead of bolts (8mm long).
+### Other changes:
+* Uses M2x8mm thread-forming screws instead of bolts.
 * Adds 3d-printable rubber feet.
 * Adds "fuzzy skin" section to edges to make it easier to grip the edges of the keyboard and pull it into place.
 * Smaller reset hole.
 
-Coming soon:
+### Coming soon:
 * Tenting stand.
 * Better rotary encoder knobs.
 
-**The rest of this README is copied from the upstream fork, and may not be accurate.**
+**The rest of this README is copied from the upstream fork, and may not be accurate anymore.**
+
+Please star my fork if you like this design, and especially if you end up printing/testing it. Feel free to open an Issue to request a feature.
 
 Case pieces
 -----------
