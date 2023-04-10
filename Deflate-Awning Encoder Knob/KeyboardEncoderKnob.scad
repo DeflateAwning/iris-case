@@ -3,7 +3,10 @@ shaftD = 5.9;
 
 outD = 13.5;
 
-h = 18;
+h = 16;
+
+clearD = 10;
+clearH = 13;
 
 $fn = 64;
 
@@ -15,6 +18,8 @@ module MakeIt() {
         cylinder(d=outD, h=h);
         
         cylinder(d=shaftD, h=h);
+        
+        cylinder(d=clearD, h=clearH);
         
     }
 }
