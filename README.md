@@ -15,10 +15,10 @@ Other changes:
 * Adds 3d-printable rubber feet.
 * Adds "fuzzy skin" section to edges to make it easier to grip the edges of the keyboard and pull it into place.
 * Smaller reset hole.
+* Better rotary encoder knobs.
 
 Coming soon:
 * Tenting stand.
-* Better rotary encoder knobs.
 
 **The rest of this README is copied from the upstream fork, and may not be accurate.**
 
