@@ -13,11 +13,11 @@ knob_taper_h = 3;
 knob_top_od = 20;
 knob_top_h = 5;
 
-knob_peg_d = 5.6; // real: 5.8
+knob_peg_d = 5.9; // real: 5.8
 knob_peg_h = 20; // real: a little less
 
 dimple_d = 8;
-dimple_h = 3;
+dimple_h = 4;
 
 $fn = 60;
 
