@@ -33,6 +33,15 @@ bot_t_nonoverlap = bot_t_total - bot_overlap;
 
 total_h = import_size_z + bot_t_nonoverlap;
 
+/////////////////////// Settings for Stand ///////////////////////
+stand_shim_h = 2.7;
+
+// locations of balls on the bottom of the stand
+ball_loc_xy_stand = [[-7, -47.9], [-72.8, -29+8], /*[-72.9, (51.3-29)/2],*/ [-73, 51.3-8], [-7, 63.7], [46.1, 53.2], [46.6, 9], [72.5, -21.8], [49, -62.6]];
+
+
+//////////////////////////////////////////////////////////////////
+
 
 echo("Amount of screw that goes into the ball part below: ", -(total_h-screw_depth-ball_d/2-ball_cyl_h), " (negative means not intersecting)");
 
@@ -41,12 +50,13 @@ $fn = 100;
 
 //import_outline();
 
-//create_plate();
-make_main_case();
+make_stand();
+// make_main_case(); // THIS IS THE MAIN ONE
 //make_balls();
 
 //make_sizing_grid();
 //fuzzy_region_modifier();
+
 
 module import_model() {
 	import(filename);
@@ -109,23 +119,46 @@ module make_main_case () {
 
 }
 
-module create_plate() {
-	rot(tilt_angle_deg_vector, cp=[-import_size_x/2, 0, 0])
 
-	//linear_extrude(height = 5) import_outline(); 
-
-	//extrude_from_to([import_size_x/2, import_size_y/2, 0], [import_size_x/2, import_size_y/2, 20], twist=10) import_outline();
+module make_stand() {
 	
 	difference() {
-		translate([-import_size_x/2, -import_size_y/2, 0]) xflip() zrot(180) xrot(90)
-			rotate_extrude(angle=tilt_angle_deg, $fn=1000)
-			translate([import_size_x/2+0.001, import_size_y/2+0.001, 0]) import_outline();
+		union() {
+			// add the outline
+			translate([-import_size_x/2, -import_size_y/2, stand_shim_h]) xflip() zrot(180) xrot(90)
+				rotate_extrude(angle=tilt_angle_deg, $fn=500)
+				translate([import_size_x/2+0.001, import_size_y/2+0.001, 0]) import_outline();
+			
+			// add a shim at the bottom
+			linear_extrude(stand_shim_h) import_outline();
+		}
 
-		translate([-import_size_x/2, -import_size_y/2, 0]) yrot(1) xflip() zrot(180) xrot(90)
-			rotate_extrude(angle=tilt_angle_deg+3, $fn=1000)
+		// remove inside part (rotate_extrude)
+		translate([-import_size_x/2, -import_size_y/2, stand_shim_h]) yrot(1) xflip() zrot(180) xrot(90)
+			rotate_extrude(angle=tilt_angle_deg+3, $fn=500)
 			translate([import_size_x/2+0.001, import_size_y/2+0.001, 0]) offset(r=-10) import_outline();
 
+		// remove inside part (linear_extrude)
+		down(0.9) linear_extrude(stand_shim_h+1) offset(r=-10) import_outline();
+
+		// remove spherical hole locations (interface with keyboard)
+		up(stand_shim_h) rot(tilt_angle_deg_vector, cp=[-import_size_x/2, 0, 0]) {
+			for (xy = ball_loc_xy) translate([xy[0], xy[1], 0]) {
+				zcyl(d=ball_cyl_d, h=ball_d/2+ball_cyl_h, anchor=TOP);
+				spheroid(d=ball_d, anchor=CENTER);
+			}
+		}
+
+		// remove spherical hole locations (grip on desk)
+		for (xy = ball_loc_xy_stand) translate([xy[0], xy[1], 0]) {
+			zcyl(d=ball_cyl_d, h=ball_d/2+ball_cyl_h, anchor=BOTTOM);
+			spheroid(d=ball_d, anchor=CENTER);
+		}
+	
 	}
+
+	// TODO consider a left-edge mount onto the keyboard, so the keyboard's feet can be used as the desk grip feet
+	
 
 }
 
