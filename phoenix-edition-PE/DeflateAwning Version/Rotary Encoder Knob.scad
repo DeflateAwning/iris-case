@@ -6,11 +6,11 @@ include <BOSL2/std.scad>
 - Fuzzy Skin Point Distance: 0.8mm
 */
 
-knob_od_bottom = 15;
-knob_h_bottom = 14;
+knob_od_bottom = 13;
+knob_h_bottom = 12;
 
 knob_taper_h = 3;
-knob_top_od = 20;
+knob_top_od = 17;
 knob_top_h = 5;
 
 knob_peg_d = 5.9; // real: 5.8
