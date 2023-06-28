@@ -36,6 +36,12 @@ total_h = import_size_z + bot_t_nonoverlap;
 /////////////////////// Settings for Stand ///////////////////////
 stand_shim_h = 2.7;
 
+// support for the ball of your hand
+stand_hand_ball_x = -50;
+stand_hand_ball_y = -120;
+stand_hand_ball_z = 11.5;
+stand_hand_ball_d = 55;
+
 // locations of balls on the bottom of the stand
 ball_loc_xy_stand = [[-7, -47.9], [-72.8, -29+8], /*[-72.9, (51.3-29)/2],*/ [-73, 51.3-8], [-7, 63.7], [46.1, 53.2], [46.6, 9], [72.5, -21.8], [49, -62.6]];
 
@@ -119,27 +125,51 @@ module make_main_case () {
 
 }
 
+module _make_raised_stand_outline(degrees_delta, offset_radius) {
+	translate([-import_size_x/2, -import_size_y/2, stand_shim_h]) xflip() zrot(180) xrot(90)
+		rotate_extrude(angle=tilt_angle_deg+degrees_delta, $fn=500)
+		translate([import_size_x/2+0.001, import_size_y/2+0.001, 0]) offset(r=offset_radius) import_outline();
+}
 
 module make_stand() {
 	
 	difference() {
 		union() {
 			// add the outline
-			translate([-import_size_x/2, -import_size_y/2, stand_shim_h]) xflip() zrot(180) xrot(90)
-				rotate_extrude(angle=tilt_angle_deg, $fn=500)
-				translate([import_size_x/2+0.001, import_size_y/2+0.001, 0]) import_outline();
+			_make_raised_stand_outline(0, 0);
 			
 			// add a shim at the bottom
 			linear_extrude(stand_shim_h) import_outline();
+
+			// add ball-of-hand (hand_ball) support
+			// methodolgy: move it to where it should be if the keeb were flat, then rotate it, then hull it
+			
+			// angled top part
+			translate([0, stand_hand_ball_y, 0]) intersection() {
+				up(stand_hand_ball_z*cos(tilt_angle_deg)) _make_raised_stand_outline(degrees_delta = 0, offset_radius = 0);
+				right(stand_hand_ball_x) zcyl(d=stand_hand_ball_d, h=1000, anchor=BOTTOM);
+			}
+
+			translate([stand_hand_ball_x, stand_hand_ball_y, 0])
+			zcyl(h=stand_hand_ball_z*cos(tilt_angle_deg)+stand_shim_h, d=stand_hand_ball_d, anchor=BOTTOM);
+
+			hull() {
+				// shadow underneath angled top part
+				translate([stand_hand_ball_x, stand_hand_ball_y]) zcyl(d=stand_hand_ball_d, h=10, anchor=BOTTOM);
+
+				// join back to the main stand (left node)
+				translate([stand_hand_ball_x+30, 0, 0]) zcyl(d=10, h=8, anchor=BOTTOM);
+
+				// join back to the main stand (right node)
+				translate([import_size_y/2-20, -30, 0]) zcyl(d=10, h=10, anchor=BOTTOM);
+			}
 		}
 
 		// remove inside part (rotate_extrude)
-		translate([-import_size_x/2, -import_size_y/2, stand_shim_h]) yrot(1) xflip() zrot(180) xrot(90)
-			rotate_extrude(angle=tilt_angle_deg+3, $fn=500)
-			translate([import_size_x/2+0.001, import_size_y/2+0.001, 0]) offset(r=-10) import_outline();
+		_make_raised_stand_outline(degrees_delta = 30, offset_radius = -10);
 
 		// remove inside part (linear_extrude)
-		down(0.9) linear_extrude(stand_shim_h+1) offset(r=-10) import_outline();
+		down(0.9) linear_extrude(stand_shim_h+1) offset(r=-10) import_outline(); // TODO maybe comment this line
 
 		// remove spherical hole locations (interface with keyboard)
 		up(stand_shim_h) rot(tilt_angle_deg_vector, cp=[-import_size_x/2, 0, 0]) {
