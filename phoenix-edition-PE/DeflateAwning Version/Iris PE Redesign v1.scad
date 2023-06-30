@@ -37,9 +37,9 @@ total_h = import_size_z + bot_t_nonoverlap;
 stand_shim_h = 2.7;
 
 // support for the ball of your hand
-stand_hand_ball_x = -50;
+stand_hand_ball_x = -45;
 stand_hand_ball_y = -120;
-stand_hand_ball_z = 11.5;
+stand_hand_ball_z = 45; // absolute position in space (not relative to the shim top)
 stand_hand_ball_d = 55;
 
 // locations of balls on the bottom of the stand
@@ -144,24 +144,19 @@ module make_stand() {
 			// add ball-of-hand (hand_ball) support
 			// methodolgy: move it to where it should be if the keeb were flat, then rotate it, then hull it
 			
-			// angled top part
-			translate([0, stand_hand_ball_y, 0]) intersection() {
-				up(stand_hand_ball_z*cos(tilt_angle_deg)) _make_raised_stand_outline(degrees_delta = 0, offset_radius = 0);
-				right(stand_hand_ball_x) zcyl(d=stand_hand_ball_d, h=1000, anchor=BOTTOM);
-			}
-
+			// main stand
 			translate([stand_hand_ball_x, stand_hand_ball_y, 0])
-			zcyl(h=stand_hand_ball_z*cos(tilt_angle_deg)+stand_shim_h, d=stand_hand_ball_d, anchor=BOTTOM);
-
+				zcyl(d=stand_hand_ball_d, h=stand_hand_ball_z, anchor=BOTTOM, rounding2=5);
+			
 			hull() {
-				// shadow underneath angled top part
-				translate([stand_hand_ball_x, stand_hand_ball_y]) zcyl(d=stand_hand_ball_d, h=10, anchor=BOTTOM);
+				// shadow underneath the main part
+				translate([stand_hand_ball_x, stand_hand_ball_y]) zcyl(d=stand_hand_ball_d, h=8, anchor=BOTTOM);
 
 				// join back to the main stand (left node)
-				translate([stand_hand_ball_x+30, 0, 0]) zcyl(d=10, h=8, anchor=BOTTOM);
+				translate([-40, 0, 0]) zcyl(d=10, h=8, anchor=BOTTOM);
 
 				// join back to the main stand (right node)
-				translate([import_size_y/2-20, -30, 0]) zcyl(d=10, h=10, anchor=BOTTOM);
+				translate([-10, -30, 0]) zcyl(d=10, h=8, anchor=BOTTOM);
 			}
 		}
 
@@ -179,12 +174,21 @@ module make_stand() {
 			}
 		}
 
-		// remove spherical hole locations (grip on desk)
-		for (xy = ball_loc_xy_stand) translate([xy[0], xy[1], 0]) {
+		// remove spherical hole locations under keeb (grip on desk)
+		for (xy = (ball_loc_xy_stand)) translate([xy[0], xy[1], 0]) {
 			zcyl(d=ball_cyl_d, h=ball_d/2+ball_cyl_h, anchor=BOTTOM);
 			spheroid(d=ball_d, anchor=CENTER);
 		}
-	
+
+		// remove spherical hole locations under hand (grip on desk)
+		translate([stand_hand_ball_x, stand_hand_ball_y]) for (rot = [0:60:360]) zrot(rot) right(stand_hand_ball_d/2 - 8) {
+			zcyl(d=ball_cyl_d, h=ball_d/2+ball_cyl_h, anchor=BOTTOM);
+			spheroid(d=ball_d, anchor=CENTER);
+		}
+		translate([stand_hand_ball_x, stand_hand_ball_y]) {
+			zcyl(d=ball_cyl_d, h=ball_d/2+ball_cyl_h, anchor=BOTTOM);
+			spheroid(d=ball_d, anchor=CENTER);
+		}
 	}
 
 	// TODO consider a left-edge mount onto the keyboard, so the keyboard's feet can be used as the desk grip feet
