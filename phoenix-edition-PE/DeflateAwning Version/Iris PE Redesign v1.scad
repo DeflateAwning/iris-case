@@ -39,8 +39,8 @@ stand_shim_h = 2.7;
 // support for the ball of your hand
 stand_hand_ball_x = -45;
 stand_hand_ball_y = -120;
-stand_hand_ball_z = 45; // absolute position in space (not relative to the shim top)
-stand_hand_ball_d = 55;
+stand_hand_ball_z = 30; // absolute position in space (not relative to the shim top)
+stand_hand_ball_d = 45;
 
 // locations of balls on the bottom of the stand
 ball_loc_xy_stand = [[-7, -47.9], [-72.8, -29+8], /*[-72.9, (51.3-29)/2],*/ [-73, 51.3-8], [-7, 63.7], [46.1, 53.2], [46.6, 9], [72.5, -21.8], [49, -62.6]];
