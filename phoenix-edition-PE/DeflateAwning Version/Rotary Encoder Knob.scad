@@ -14,7 +14,7 @@ knob_top_od = 17;
 knob_top_h = 5;
 
 knob_peg_d = 5.9; // real: 5.8
-knob_peg_h = 20; // real: a little less
+knob_peg_h = 17.5; // real: ~19.5
 knob_peg_clearance_d = 9;
 knob_peg_clearance_h = 12.5;
 
@@ -50,9 +50,9 @@ module make_rotary_encoder_knob() {
 		zcyl(d1=knob_peg_clearance_d, d2=knob_peg_d, h=knob_peg_clearance_h, anchor=BOTTOM);
 
 		// remove the tapered cleanance on top
-		up(knob_peg_clearance_h+knob_peg_interface_h) {
+		/*up(knob_peg_clearance_h+knob_peg_interface_h) {
 			zcyl(d1=knob_peg_clearance_d, d2=knob_peg_d, h=knob_peg_h-knob_peg_clearance_h-knob_peg_interface_h, anchor=BOTTOM);
-		}
+		}*/
 
 
 		// remove sphere at the top
@@ -61,6 +61,6 @@ module make_rotary_encoder_knob() {
 		}
 
 		// remove sideview for debugging
-		//cuboid(100, anchor=FRONT);
+		// cuboid(100, anchor=FRONT);
 	}
 } 
