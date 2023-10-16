@@ -3,6 +3,7 @@ include <BOSL2/std.scad>;
 // Fuzzy Skin Settings:
 // Distance: 0.7mm
 // Thickness: 1.0mm
+// Supports Required.
 
 //filename = "../Iris PE Middle Layer - Normal No Lip for 1.5mm Plate.stl";
 filename = "../Iris PE Middle Layer - Normal No Lip for 1.5mm Plate - Centered.stl";
@@ -16,7 +17,7 @@ tilt_angle_deg = 20;
 tilt_angle_deg_vector = [0, -20, 0];
 
 screw_depth = 8-1; // screw len minus FR4 plate thickness
-screw_d = 1;
+screw_d = 1.7; // M2 screw, but at this small of diameter, the plastic fills the hole
 
 ball_d = 6;
 ball_cyl_d = 3.5;
@@ -56,8 +57,8 @@ $fn = 100;
 
 //import_outline();
 
-make_stand();
-// make_main_case(); // THIS IS THE MAIN ONE
+//make_stand();
+make_main_case(); // THIS IS THE MAIN ONE
 //make_balls();
 
 //make_sizing_grid();
