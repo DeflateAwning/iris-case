@@ -22,6 +22,8 @@ screw_d = 1.7; // M2 screw, but at this small of diameter, the plastic fills the
 ball_d = 6;
 ball_cyl_d = 3.5;
 ball_cyl_h = 1;
+foot_max_d = ball_d * 1.4;
+foot_retainer_h = 3.5+2; // sum of heights from middle of ball in _make_ball_outside()
 
 holes_xy = [[-7, -47.9], [-72.8, -29], [-73, 51.3], [-7, 63.7], [17.9, 62.8], [46.1, 53.2], [46.6, 9], [61.9, -14.4], [72.5, -21.8], [49, -62.6]];
 ball_loc_xy = [[-7, -47.9], [-72.8, -29], [-72.9, (51.3-29)/2], [-73, 51.3], [-7, 63.7], [46.1, 53.2], [46.6, 9], [72.5, -21.8], [49, -62.6]];
@@ -50,7 +52,7 @@ ball_loc_xy_stand = [[-7, -47.9], [-72.8, -29+8], /*[-72.9, (51.3-29)/2],*/ [-73
 //////////////////////////////////////////////////////////////////
 
 
-echo("Amount of screw that goes into the ball part below: ", -(total_h-screw_depth-ball_d/2-ball_cyl_h), " (negative means not intersecting)");
+//echo("Amount of screw that goes into the ball part below: ", -(total_h-screw_depth-ball_d/2-ball_cyl_h), " (negative means not intersecting)");
 
 $fn = 100;
 
@@ -64,6 +66,13 @@ make_main_case(); // THIS IS THE MAIN ONE
 //make_sizing_grid();
 //fuzzy_region_modifier();
 
+// debug cross-section view
+/*
+difference() {
+	make_main_case();
+	//translate([46.1, 53.2, 0]) cuboid([100, 100, 100], anchor=LEFT+FRONT);
+	translate([46.1, 53.2, 0]) cuboid([100, 100, 100], anchor=LEFT);
+}*/
 
 module import_model() {
 	import(filename);
@@ -96,7 +105,7 @@ module make_main_case () {
 			
 			// add supports around balls
 			for (xy = ball_loc_xy) translate([xy[0], xy[1], 0]) {
-				zcyl(d=ball_cyl_d+4, h=ball_d/2+ball_cyl_h+2, anchor=BOTTOM);
+				zcyl(d=foot_max_d+2.5, h=foot_retainer_h+2, anchor=BOTTOM);
 				intersection() {
 					spheroid(d=ball_d+4, anchor=CENTER, $fn=50);
 					cuboid([1000, 1000, 1000], anchor=BOTTOM);
@@ -107,7 +116,7 @@ module make_main_case () {
 		// remove screw holes to top board
 		for (xy = holes_xy) translate([xy[0], xy[1], 0]) {
 			up(total_h) zcyl(d=screw_d, h=screw_depth, anchor=TOP);
-			up(total_h) zcyl(d1=screw_d, d2=2, h=0.8, anchor=TOP); // add registration hole for easy screwing
+			up(total_h) zcyl(d1=screw_d, d2=2.1, h=0.8, anchor=TOP); // add registration hole for easy screwing
 		}
 
 		// remove reset/programming hole
@@ -118,8 +127,7 @@ module make_main_case () {
 	
 		// remove places for balls
 		for (xy = ball_loc_xy) translate([xy[0], xy[1], 0]) {
-			zcyl(d=ball_cyl_d, h=ball_d/2+ball_cyl_h, anchor=BOTTOM);
-			spheroid(d=ball_d, anchor=CENTER);
+			_make_ball_outside();
 		}
 
 	}
@@ -133,6 +141,7 @@ module _make_raised_stand_outline(degrees_delta, offset_radius) {
 }
 
 module make_stand() {
+	// FIXME: update this to work with the new ball format
 	
 	difference() {
 		union() {
@@ -246,8 +255,23 @@ module fuzzy_region_modifier() {
 }
 
 module make_balls() {
-	zcyl(d=ball_cyl_d - 0.5, h=ball_d/2+ball_cyl_h - 0.6, anchor=BOTTOM);
-	spheroid(d=ball_d, anchor=CENTER);
-
+	difference() {
+		_make_ball_outside();
+		up(ball_d/2) zcyl(d=2.3, h=100, anchor=BOTTOM);
+	}
 }
 
+module _make_ball_outside() {
+	zcyl(
+		d1=2, d2=foot_max_d,
+		h=3.5,
+		anchor=BOTTOM
+	);
+	up(3.5) zcyl(
+		d1=foot_max_d,
+		d2=ball_d,
+		h=2,
+		anchor=BOTTOM
+	);
+	spheroid(d=ball_d, anchor=CENTER);
+}
