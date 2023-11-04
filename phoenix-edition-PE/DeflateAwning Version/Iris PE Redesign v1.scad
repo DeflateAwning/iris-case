@@ -38,8 +38,8 @@ total_h = import_size_z + bot_t_nonoverlap;
 stand_shim_h = 2.7;
 
 // support for the ball of your hand
-stand_hand_ball_x = -45;
-stand_hand_ball_y = -120;
+stand_hand_ball_x = -50;
+stand_hand_ball_y = -125;
 stand_hand_ball_z = 30; // absolute position in space (not relative to the shim top)
 stand_hand_ball_d = 45;
 
