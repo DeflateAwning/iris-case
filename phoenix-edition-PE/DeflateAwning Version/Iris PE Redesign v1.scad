@@ -22,7 +22,8 @@ screw_d = 1.7; // M2 screw, but at this small of diameter, the plastic fills the
 ball_d = 6;
 ball_cyl_d = 3.5;
 ball_cyl_h = 1;
-foot_max_d = ball_d * 1.4;
+foot_max_d = ball_d * 1.4; // max d for clipped cones
+foot_max_d_cyl = ball_d * 1.25; // real max d
 foot_retainer_h = 3.5+2; // sum of heights from middle of ball in _make_ball_outside()
 
 holes_xy = [[-7, -47.9], [-72.8, -29], [-73, 51.3], [-7, 63.7], [17.9, 62.8], [46.1, 53.2], [46.6, 9], [61.9, -14.4], [72.5, -21.8], [49, -62.6]];
@@ -127,7 +128,7 @@ module make_main_case () {
 	
 		// remove places for balls
 		for (xy = ball_loc_xy) translate([xy[0], xy[1], 0]) {
-			_make_ball_outside();
+			_make_ball_outside(false);
 		}
 
 	}
@@ -256,23 +257,31 @@ module fuzzy_region_modifier() {
 
 module make_balls() {
 	difference() {
-		_make_ball_outside();
+		_make_ball_outside(true);
 		// up(ball_d/2)
         zcyl(d=3, h=100, anchor=BOTTOM);
 	}
 }
 
-module _make_ball_outside() {
-	zcyl(
-		d1=2, d2=foot_max_d,
-		h=3.5,
-		anchor=BOTTOM
-	);
-	up(3.5) zcyl(
-		d1=foot_max_d,
-		d2=ball_d,
-		h=2,
-		anchor=BOTTOM
-	);
+module _make_ball_outside(clip_cone) {
+    // When clip_cone=true, the cones are clipped (for the actual balls)
+    // When clip_cone=false, the cones extend all the way out (for creating the void in the rigid case)
+    intersection() {
+        union() {
+            zcyl(
+                d1=2, d2=foot_max_d,
+                h=3.5,
+                anchor=BOTTOM
+            );
+            up(3.5) zcyl(
+                d1=foot_max_d,
+                d2=ball_d,
+                h=2,
+                anchor=BOTTOM
+            );
+        }
+        if (clip_cone)
+            zcyl(d=foot_max_d_cyl, h=100);
+    }
 	spheroid(d=ball_d, anchor=CENTER);
 }
