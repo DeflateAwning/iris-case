@@ -60,8 +60,8 @@ $fn = 100;
 //import_outline();
 
 //make_stand();
-make_main_case(); // THIS IS THE MAIN ONE
-//make_balls();
+//make_main_case(); // THIS IS THE MAIN ONE
+make_balls();
 
 //make_sizing_grid();
 //fuzzy_region_modifier();
@@ -257,7 +257,8 @@ module fuzzy_region_modifier() {
 module make_balls() {
 	difference() {
 		_make_ball_outside();
-		up(ball_d/2) zcyl(d=2.3, h=100, anchor=BOTTOM);
+		// up(ball_d/2)
+        zcyl(d=3, h=100, anchor=BOTTOM);
 	}
 }
 
