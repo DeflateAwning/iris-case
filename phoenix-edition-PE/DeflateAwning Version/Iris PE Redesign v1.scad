@@ -19,11 +19,11 @@ tilt_angle_deg_vector = [0, -20, 0];
 screw_depth = 8-1; // screw len minus FR4 plate thickness
 screw_d = 1.7; // M2 screw, but at this small of diameter, the plastic fills the hole
 
-ball_d = 6;
+ball_d = 7;
 ball_cyl_d = 3.5;
 ball_cyl_h = 1;
-foot_max_d = ball_d * 1.4; // max d for clipped cones
-foot_max_d_cyl = ball_d * 1.25; // real max d
+foot_max_d = 6 * 1.4; // max d for clipped cones
+foot_max_d_cyl = 6 * 1.25; // real max d
 foot_retainer_h = 3.5+2; // sum of heights from middle of ball in _make_ball_outside()
 
 holes_xy = [[-7, -47.9], [-72.8, -29], [-73, 51.3], [-7, 63.7], [17.9, 62.8], [46.1, 53.2], [46.6, 9], [61.9, -14.4], [72.5, -21.8], [49, -62.6]];
@@ -61,8 +61,8 @@ $fn = 100;
 //import_outline();
 
 //make_stand();
-//make_main_case(); // THIS IS THE MAIN ONE
-make_balls();
+make_main_case(); // THIS IS THE MAIN ONE
+//make_balls();
 
 //make_sizing_grid();
 //fuzzy_region_modifier();
@@ -106,7 +106,7 @@ module make_main_case () {
 			
 			// add supports around balls
 			for (xy = ball_loc_xy) translate([xy[0], xy[1], 0]) {
-				zcyl(d=foot_max_d+2.5, h=foot_retainer_h+2, anchor=BOTTOM);
+				zcyl(d=foot_max_d+1.5, h=foot_retainer_h+2, anchor=BOTTOM);
 				intersection() {
 					spheroid(d=ball_d+4, anchor=CENTER, $fn=50);
 					cuboid([1000, 1000, 1000], anchor=BOTTOM);
@@ -266,22 +266,24 @@ module make_balls() {
 module _make_ball_outside(clip_cone) {
     // When clip_cone=true, the cones are clipped (for the actual balls)
     // When clip_cone=false, the cones extend all the way out (for creating the void in the rigid case)
-    intersection() {
-        union() {
-            zcyl(
-                d1=2, d2=foot_max_d,
-                h=3.5,
-                anchor=BOTTOM
-            );
-            up(3.5) zcyl(
-                d1=foot_max_d,
-                d2=ball_d,
-                h=2,
-                anchor=BOTTOM
-            );
+    up(0.5) {
+        intersection() {
+            union() {
+                zcyl(
+                    d1=2, d2=foot_max_d,
+                    h=3.5,
+                    anchor=BOTTOM
+                );
+                up(3.5) zcyl(
+                    d1=foot_max_d,
+                    d2=ball_d,
+                    h=2,
+                    anchor=BOTTOM
+                );
+            }
+            if (clip_cone)
+                zcyl(d=foot_max_d_cyl, h=100);
         }
-        if (clip_cone)
-            zcyl(d=foot_max_d_cyl, h=100);
+        spheroid(d=ball_d, anchor=CENTER);
     }
-	spheroid(d=ball_d, anchor=CENTER);
 }
