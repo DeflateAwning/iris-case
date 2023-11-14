@@ -19,15 +19,18 @@ tilt_angle_deg_vector = [0, -20, 0];
 screw_depth = 8-1; // screw len minus FR4 plate thickness
 screw_d = 1.7; // M2 screw, but at this small of diameter, the plastic fills the hole
 
-ball_d = 7;
-ball_cyl_d = 3.5;
-ball_cyl_h = 1;
-foot_max_d = 6 * 1.4; // max d for clipped cones
-foot_max_d_cyl = 6 * 1.25; // real max d
-foot_retainer_h = 3.5+2; // sum of heights from middle of ball in _make_ball_outside()
+foot_screw_d_mate = 1.7;
+foot_screw_d_clear = 2.1;
+foot_screw_head_d = 4;
+foot_sink_dist = 1;
+foot_h = 5;
+foot_d_max = 8;
+foot_d_small = 7;
+foot_screw_meat = 3; // amount of meat the screw passes through on the foot
+foot_screw_len = 8 - foot_screw_meat + foot_sink_dist + 1;
 
 holes_xy = [[-7, -47.9], [-72.8, -29], [-73, 51.3], [-7, 63.7], [17.9, 62.8], [46.1, 53.2], [46.6, 9], [61.9, -14.4], [72.5, -21.8], [49, -62.6]];
-ball_loc_xy = [[-7, -47.9], [-72.8, -29], [-72.9, (51.3-29)/2], [-73, 51.3], [-7, 63.7], [46.1, 53.2], [46.6, 9], [72.5, -21.8], [49, -62.6]];
+feet_locs_xy = [[-7, -47.9], [-72.8, -29], [-72.9, (51.3-29)/2], [-73, 51.3], [-7, 63.7], [46.1, 53.2], [46.6, 9], [72.5, -21.8], [49, -62.6]];
 
 // bot_left_ball_xy = [-72.8, -29]; // for indexing the reset switch position
 
@@ -36,6 +39,10 @@ bot_overlap = 1;
 bot_t_nonoverlap = bot_t_total - bot_overlap;
 
 total_h = import_size_z + bot_t_nonoverlap;
+
+pillar_locs_xy = [[-7, -29]];
+pillar_d = 5;
+pillar_h = total_h;
 
 /////////////////////// Settings for Stand ///////////////////////
 stand_shim_h = 2.7;
@@ -47,7 +54,7 @@ stand_hand_ball_z = 30; // absolute position in space (not relative to the shim 
 stand_hand_ball_d = 45;
 
 // locations of balls on the bottom of the stand
-ball_loc_xy_stand = [[-7, -47.9], [-72.8, -29+8], /*[-72.9, (51.3-29)/2],*/ [-73, 51.3-8], [-7, 63.7], [46.1, 53.2], [46.6, 9], [72.5, -21.8], [49, -62.6]];
+feet_locs_xy_stand = [[-7, -47.9], [-72.8, -29+8], /*[-72.9, (51.3-29)/2],*/ [-73, 51.3-8], [-7, 63.7], [46.1, 53.2], [46.6, 9], [72.5, -21.8], [49, -62.6]];
 
 
 //////////////////////////////////////////////////////////////////
@@ -62,7 +69,7 @@ $fn = 100;
 
 //make_stand();
 make_main_case(); // THIS IS THE MAIN ONE
-//make_balls();
+//make_foot();
 
 //make_sizing_grid();
 //fuzzy_region_modifier();
@@ -103,14 +110,14 @@ module make_main_case () {
 
 			linear_extrude(height = bot_t_total) import_outline();
 
-			
-			// add supports around balls
-			for (xy = ball_loc_xy) translate([xy[0], xy[1], 0]) {
-				zcyl(d=foot_max_d+1.5, h=foot_retainer_h+2, anchor=BOTTOM);
-				intersection() {
-					spheroid(d=ball_d+4, anchor=CENTER, $fn=50);
-					cuboid([1000, 1000, 1000], anchor=BOTTOM);
-				}
+			// add supports around feet
+			for (xy = feet_locs_xy) translate([xy[0], xy[1], 0]) {
+				zcyl(d=foot_screw_d_mate+3, h=total_h-0.25, anchor=BOTTOM);
+			}
+
+			// add extra support pillar
+			for (xy = pillar_locs_xy) translate([xy[0], xy[1], 0]) {
+				zcyl(d=pillar_d, h=pillar_h-0.25, anchor=BOTTOM);
 			}
 		}
 
@@ -126,13 +133,21 @@ module make_main_case () {
 		//% translate([-import_size_x/2 + 83.7, import_size_y/2 - 52.5, 0]) cuboid([8, 8, 30], rounding=2.5, except=[TOP, BOTTOM]);
 		translate([5.27, 15.98, 0]) zcyl(d=7, h=50); //cuboid([8, 8, 30], rounding=2.5, except=[TOP, BOTTOM]);
 	
-		// remove places for balls
-		for (xy = ball_loc_xy) translate([xy[0], xy[1], 0]) {
-			_make_ball_outside(false);
-		}
+		// remove places for feet
+		for (xy = feet_locs_xy) translate([xy[0], xy[1], 0]) {
+			// screw
+			zcyl(d=foot_screw_d_mate, h=foot_screw_len, anchor=BOTTOM);
 
+			// foot
+			zcyl(d=foot_d_max, h=foot_sink_dist, anchor=BOTTOM);
+		}
 	}
 
+	// add back support material
+	for (xy = feet_locs_xy) translate([xy[0], xy[1], 0]) {
+		// foot
+		zcyl(d=foot_d_max-2, h=foot_sink_dist-0.21, anchor=BOTTOM);
+	}
 }
 
 module _make_raised_stand_outline(degrees_delta, offset_radius) {
@@ -142,7 +157,7 @@ module _make_raised_stand_outline(degrees_delta, offset_radius) {
 }
 
 module make_stand() {
-	// FIXME: update this to work with the new ball format
+	// FIXME: update this to work with the new foot format
 	
 	difference() {
 		union() {
@@ -179,14 +194,14 @@ module make_stand() {
 
 		// remove spherical hole locations (interface with keyboard)
 		up(stand_shim_h) rot(tilt_angle_deg_vector, cp=[-import_size_x/2, 0, 0]) {
-			for (xy = ball_loc_xy) translate([xy[0], xy[1], 0]) {
+			for (xy = feet_locs_xy) translate([xy[0], xy[1], 0]) {
 				zcyl(d=ball_cyl_d, h=ball_d/2+ball_cyl_h, anchor=TOP);
 				spheroid(d=ball_d, anchor=CENTER);
 			}
 		}
 
 		// remove spherical hole locations under keeb (grip on desk)
-		for (xy = (ball_loc_xy_stand)) translate([xy[0], xy[1], 0]) {
+		for (xy = (feet_locs_xy_stand)) translate([xy[0], xy[1], 0]) {
 			zcyl(d=ball_cyl_d, h=ball_d/2+ball_cyl_h, anchor=BOTTOM);
 			spheroid(d=ball_d, anchor=CENTER);
 		}
@@ -255,35 +270,31 @@ module fuzzy_region_modifier() {
 	translate([-80.5, -3, 0]) up(1) cuboid([4, 55, total_h-2], rounding=fuzzy_rounding, except=[RIGHT, LEFT], anchor=BOTTOM+LEFT);
 }
 
-module make_balls() {
-	difference() {
-		_make_ball_outside(true);
-		// up(ball_d/2)
-        zcyl(d=3, h=100, anchor=BOTTOM);
-	}
-}
+module make_foot() {
+	torus_od = foot_d_small;
+	torus_id = foot_screw_head_d;
+	torus_d_minor = torus_od/2 - torus_id/2;
 
-module _make_ball_outside(clip_cone) {
-    // When clip_cone=true, the cones are clipped (for the actual balls)
-    // When clip_cone=false, the cones extend all the way out (for creating the void in the rigid case)
-    up(0.5) {
-        intersection() {
-            union() {
-                zcyl(
-                    d1=2, d2=foot_max_d,
-                    h=3.5,
-                    anchor=BOTTOM
-                );
-                up(3.5) zcyl(
-                    d1=foot_max_d,
-                    d2=ball_d,
-                    h=2,
-                    anchor=BOTTOM
-                );
-            }
-            if (clip_cone)
-                zcyl(d=foot_max_d_cyl, h=100);
-        }
-        spheroid(d=ball_d, anchor=CENTER);
-    }
+	difference() {
+		union() {
+			zcyl(
+				d1=foot_d_max,
+				d2=foot_d_small,
+				h=foot_h - torus_d_minor/2,
+				anchor=BOTTOM
+			);
+
+			up(foot_h) torus(
+				od = torus_od,
+				id = torus_id,
+				anchor=TOP
+			);
+		}
+
+		// screw
+		zcyl(d=foot_screw_d_clear, h=100);
+
+		// screw head
+		up(foot_screw_meat) zcyl(d=foot_screw_head_d-0.01, h=100, anchor=BOTTOM);
+	}
 }
