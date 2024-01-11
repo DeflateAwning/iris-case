@@ -42,7 +42,15 @@ total_h = import_size_z + bot_t_nonoverlap;
 
 pillar_locs_xy = [[-7, -29]];
 pillar_d = 5;
-pillar_h = total_h;
+pillar_h = total_h - 0.25;
+echo("total_h: ", total_h);
+
+
+/////////////////////// Settings for Stand ///////////////////////
+shell_bot_t = 0.8;
+shell_wall_t = 3;
+
+/////////////////////// END Settings for Stand ///////////////////
 
 /////////////////////// Settings for Stand ///////////////////////
 stand_shim_h = 2.7;
@@ -68,11 +76,12 @@ $fn = 100;
 //import_outline();
 
 //make_stand();
-make_main_case(); // THIS IS THE MAIN ONE
+// make_main_case(); // THIS IS THE MAIN ONE
 //make_foot();
+make_shell();
 
 //make_sizing_grid();
-//fuzzy_region_modifier();
+// fuzzy_region_modifier(through_wall = false); // main part for making fuzzy region
 
 // debug cross-section view
 /*
@@ -100,6 +109,20 @@ module create_solid_import() {
 	circle(d=50);
 }
 
+module make_shell() {
+	difference() {
+		// create outside shell
+		down(shell_bot_t)
+		linear_extrude(total_h + shell_bot_t) offset(shell_wall_t) import_outline();
+
+		// remove the actual keyboard
+		linear_extrude(100) import_outline();
+
+		// remove grippy parts
+		fuzzy_region_modifier(true);
+	}
+}
+
 module make_main_case () {
 	difference() {
 		union() {
@@ -117,7 +140,7 @@ module make_main_case () {
 
 			// add extra support pillar
 			for (xy = pillar_locs_xy) translate([xy[0], xy[1], 0]) {
-				zcyl(d=pillar_d, h=pillar_h-0.25, anchor=BOTTOM);
+				zcyl(d=pillar_d, h=pillar_h, anchor=BOTTOM);
 			}
 		}
 
@@ -257,17 +280,35 @@ module make_sizing_grid() {
 
 }
 
-module fuzzy_region_modifier() {
+module fuzzy_region_modifier(through_wall = false) {
 	fuzzy_rounding = 4;
+	shift_right = through_wall ? (6-10) : 0;
+	depth = through_wall ? 10 : 4;
 
 	// bottom-right
-	translate([63.5, -45, 0]) up(1) zrot(-30) cuboid([4, 45, total_h-2], rounding=fuzzy_rounding, except=[RIGHT, LEFT], anchor=BOTTOM+LEFT);
+	translate([63.5, -45, 0]) up(1) zrot(-30) right(shift_right) cuboid([depth, 45, total_h-2], rounding=fuzzy_rounding, except=[RIGHT, LEFT], anchor=BOTTOM+LEFT);
 
 	// center bottom region
-	translate([-15, -43, 0]) up(1) cuboid([4, 12, total_h-2], rounding=fuzzy_rounding, except=[RIGHT, LEFT], anchor=BOTTOM+LEFT);
+	translate([-15, -44.5, 0]) up(1) right(shift_right) cuboid([depth, 12, total_h-2], rounding=fuzzy_rounding, except=[RIGHT, LEFT], anchor=BOTTOM+LEFT);
 
 	// left edge
-	translate([-80.5, -3, 0]) up(1) cuboid([4, 55, total_h-2], rounding=fuzzy_rounding, except=[RIGHT, LEFT], anchor=BOTTOM+LEFT);
+	translate([-80.5, -3, 0]) up(1) right(shift_right) cuboid([depth, 55, total_h-2], rounding=fuzzy_rounding, except=[RIGHT, LEFT], anchor=BOTTOM+LEFT);
+
+	if (through_wall) {
+		// USB to computer
+		translate([6, 0, 0]) up(1) cuboid(
+			[30, 100, total_h-2],
+			anchor=BOTTOM+FRONT,
+			rounding=fuzzy_rounding, except=[FRONT, BACK],
+		);
+
+		// USB to other half
+		translate([45, -20, 0]) up(1) zrot(-30) cuboid(
+			[20, 100, total_h-2],
+			anchor=BOTTOM+FRONT,
+			rounding=fuzzy_rounding, except=[FRONT, BACK],
+		) ;
+	} 
 }
 
 module make_foot() {
